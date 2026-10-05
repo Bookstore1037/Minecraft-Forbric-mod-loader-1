@@ -516,7 +516,9 @@ Notable repairs by family (read each class's javadoc for the case that motivated
 - **Merge invariants** — `ForbricMergedBaseCompatTransformer` (lambda bootstrap handles vs. static-ness, the
   MinecraftForge `getFluidType()` bridge, key-mapping `MAP` initializer and vanilla's `KeyMapping.MAP` back as a view of
   the mappings by key (`KernelKeyMappingMap`; both ecosystems re-type it, and LiquidBounce reads it on every key press in
-  a screen), and retargeting the base's baked-in
+  a screen), vanilla's `FriendlyByteBuf.writeByte(int)` called again where NeoForge's recompile bound a byte-typed call to
+  its extension's `writeByte(byte)`, which only forwards there (14 sites in 10 network `write` methods; ViaFabricPlus'
+  ability-flag redirect anchors on vanilla's call; `-Dforbric.vanillaWriteByte=off`), and retargeting the base's baked-in
   calls to `net/forbric/loader/impl/…` onto `net.forbric.kernel.interop`), `DuplicateLambdaPruneInjector`
   (orphaned lambdas a name-only mixin selector would bind to), `WidenedFieldTwinInjector` (vanilla-descriptor
   twins of re-typed fields), `MethodBodyNeuter`.
@@ -741,7 +743,14 @@ installed mod references it), only an `@Inject` capturing vanilla's arguments or
 contract is known (never a `@ModifyVariable`), and only where every `INVOKE`/`FIELD` point is held as often by both
 bodies. NeoForge gave `ModelBlockRenderer.shouldRenderFace` the block's own position and declared it before vanilla's,
 so LiquidBounce's X-Ray face test, selected by name and taking vanilla's four arguments, used to bind NeoForge's
-overload, be rejected there and take the whole block-renderer mixin with it; `-Dforbric.mixinTwinRebind=off`.
+overload, be rejected there and take the whole block-renderer mixin with it; `-Dforbric.mixinTwinRebind=off`. And
+`ThinnedCallOrdinals`: where the carrier makes a vanilla call fewer times — it replaced some occurrences with calls of its
+own and kept the others — an `@At(INVOKE)` ordinal counted on vanilla's body is re-counted onto the merged occurrence
+that is the same call, along a reviewed row that maps each of vanilla's occurrences to the kept one or to none and names
+the call each kept occurrence is followed by (checked on both jars, and again on the live method). ViaFabricPlus' 1.12.2
+placement hook sits before the third `ItemStack.isEmpty()` of `MultiPlayerGameMode.performUseItemOn`; NeoForge and
+MinecraftForge ask `doesSneakBypassUse` of both hand stacks where vanilla asked `isEmpty`, so the merged body keeps only
+the third. Only for the families compiled against vanilla's count; `-Dforbric.thinnedCallOrdinals=off`.
 `GuestInjectorPruner` (COREMOD) trims individual injectors from a guest mixin
 class where the kernel replaces their function, and, at the end of the bytecode provider's adapters, the injectors the
 verdict found Mixin would reject outright (§7.3) — each only while the same rule still says so of the node Mixin is about
