@@ -146,6 +146,7 @@ test	net.forbric.kernel.mixin.CarrierHelperCensusTest	theShippedTableIsExactlyWh
 test	net.forbric.kernel.mixin.CarrierRenameCensusTest	onlyNeoForgesRenamedTooltipBodyIsUncalled()	[fixture:staged] $ROOT/forbric-loader/run/merged-base/patched-mc-merged-26.2.jar required
 test	net.forbric.kernel.mixin.CarrierRenameCensusTest	theShippedTableIsExactlyWhatTheArtifactsSay()	[fixture:staged] $ROOT/forbric-loader/run/merged-base/patched-mc-merged-26.2.jar required
 test	net.forbric.kernel.mixin.CarrierStubCensusTest	theShippedTableIsExactlyWhatTheArtifactsSay()	[fixture:staged] merged base and vanilla jar required
+test	net.forbric.kernel.mixin.CarrierTwinCensusTest	theShippedTableIsExactlyWhatTheArtifactsSay()	[fixture:staged] merged base required
 test	net.forbric.kernel.mixin.ContinuitySpriteMixinAdapterTest	aChangedLocalMapLayoutIsRefused()	[fixture:third-party] actual Continuity fixture required
 test	net.forbric.kernel.mixin.ContinuitySpriteMixinAdapterTest	actualCallbacksMoveToTheLiveOverloadAndKeepTheOriginalLoaderMapArgument()	[fixture:third-party] actual Continuity fixture required
 test	net.forbric.kernel.mixin.ContinuitySpriteMixinAdapterTest	vanillaAndDisabledRepairKeepTheUpstreamMixin()	[fixture:mc-libraries] actual game required
@@ -332,6 +333,7 @@ test	net.forbric.kernel.mixin.MixinSubtypeOwnerRetargetTest	thePredicateCheckMov
 test	net.forbric.kernel.mixin.MixinSubtypeOwnerRetargetTest	vanillasGoalStillMakesTheCallItself()	[fixture:mc-libraries] actual game required
 test	net.forbric.kernel.mixin.MixinSubtypeOwnerRetargetTest	vanillasOwnCallTheSwitchAndAMissingLocalAreLeftAlone()	[fixture:mc-libraries] actual game required
 test	net.forbric.kernel.mixin.MixinSubtypeOwnerRetargetTest	withTheRuleOffTheArchersLookIsTheMissItWas()	[fixture:staged] actual game required
+test	net.forbric.kernel.mixin.MixinTwinRebindTest	releasedLiquidBounceMovesItsFaceTestAndNothingElse()	[fixture:staged] actual game required
 test	net.forbric.kernel.mixin.MixinWrapOperationShimTest	fabricNetworkingsCodecWrapsStayUnboundBecauseTheKernelServesThoseCodecs()	[fixture:staged] actual Fabric API fixture required
 test	net.forbric.kernel.mixin.MixinWrapOperationShimTest	fabricNetworkingsDecoratorWrapIsReportedAsTheMissItIs()	[fixture:staged] actual Fabric API fixture required
 test	net.forbric.kernel.mixin.MixinWrapOperationShimTest	pickBlockWrapBindsToNeoForgesCallAndHandsTheHandlerItsOwnOrder()	[fixture:staged] actual Fabric API fixture required
