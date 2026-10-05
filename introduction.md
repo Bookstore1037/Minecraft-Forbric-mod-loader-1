@@ -730,15 +730,28 @@ forwarding the vanilla call, moves onto the carrier's call and forwards that one
 stand for each other, which operands carry the same values and why (ViaFabricPlus' hotbar keys —
 `KeyMapping.matches` → `isActiveAndMatches`, item use — `ItemStack.isSameItem` → `CommonHooks.canContinueUsing`, with the
 handler's own logic keeping vanilla's argument order, and shovel paths — `FLATTENABLES.get` → the state's
-`SHOVEL_FLATTEN` modification; only for the families whose own class made the vanilla call; `-Dforbric.replacedCallRedirects=off`). `GuestInjectorPruner` (COREMOD) trims individual injectors from a guest mixin
+`SHOVEL_FLATTEN` modification; only for the families whose own class made the vanilla call; `-Dforbric.replacedCallRedirects=off`), and `MixinTwinRebind`: an injector written for vanilla's signature of a method
+the merged base keeps but nothing in the merged game calls moves to the one overload the carrier added in its place,
+along a row of `carrier-twins.txt` (`CarrierTwinCensusTest`: vanilla's method is uncalled for the mod's family and is no
+carrier stub, the overload takes each of vanilla's parameters — matched one to one by local variable name and type —
+and every method that family's own game called vanilla's from calls the overload in the merged base). The handler is
+wrapped when it captures vanilla's arguments in other places than the overload has them: the outer takes the
+overload's arguments and hands the original vanilla's. It moves only while vanilla's method is still uncalled (no
+installed mod references it), only an `@Inject` capturing vanilla's arguments or none or an `@At`-driven kind whose
+contract is known (never a `@ModifyVariable`), and only where every `INVOKE`/`FIELD` point is held as often by both
+bodies. NeoForge gave `ModelBlockRenderer.shouldRenderFace` the block's own position and declared it before vanilla's,
+so LiquidBounce's X-Ray face test, selected by name and taking vanilla's four arguments, used to bind NeoForge's
+overload, be rejected there and take the whole block-renderer mixin with it; `-Dforbric.mixinTwinRebind=off`.
+`GuestInjectorPruner` (COREMOD) trims individual injectors from a guest mixin
 class where the kernel replaces their function, and, at the end of the bytecode provider's adapters, the injectors the
 verdict found Mixin would reject outright (§7.3) — each only while the same rule still says so of the node Mixin is about
 to receive, so an injector an adapter already moved where it fits stays. Several adapters read shipped tables under
 `src/main/resources/net/forbric/kernel/mixin/` (`carrier-helpers.txt`, `carrier-renames.txt`, `carrier-stubs.txt`,
-`lambda-permutations.txt`, `uncalled-methods.txt`, `native-only-methods.txt`); `CarrierHelperCensusTest`,
-`CarrierRenameCensusTest`, `UncalledMethodCensusTest` and `NativeOnlyMethodsCensusTest` re-derive `carrier-helpers.txt`,
-`carrier-renames.txt`, `uncalled-methods.txt` and `native-only-methods.txt` from the staged jars (the last from the merged
-base, both patched games and vanilla's own jar) and pin them. A wrapper that renames a handler's body aside
+`carrier-twins.txt`, `lambda-permutations.txt`, `uncalled-methods.txt`, `native-only-methods.txt`); `CarrierHelperCensusTest`,
+`CarrierRenameCensusTest`, `CarrierTwinCensusTest`, `UncalledMethodCensusTest` and `NativeOnlyMethodsCensusTest` re-derive
+`carrier-helpers.txt`, `carrier-renames.txt`, `carrier-twins.txt`, `uncalled-methods.txt` and `native-only-methods.txt`
+from the staged jars (`native-only-methods.txt` from the merged base, both patched games and vanilla's own jar) and pin
+them. A wrapper that renames a handler's body aside
 (`MixinRetarget`'s guard and R7, `MixinAtWidenedCall`'s redirect, `MixinSubtypeOwnerRetarget`'s guard) adds a mark of
 the mixin class to the name, so two mixins on one target with the same handler name do not merge into one body.
 `MixinFitLivenessCensusStagedTest` also keeps a census of the anchors a Fabric mixin names that resolve on stock 26.2
