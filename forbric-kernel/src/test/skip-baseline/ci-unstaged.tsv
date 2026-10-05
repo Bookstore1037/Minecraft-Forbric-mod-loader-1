@@ -357,6 +357,8 @@ test	net.forbric.kernel.mixin.ReplacedCallRedirectsTest	releasedViaFabricPlusMov
 test	net.forbric.kernel.mixin.ReplacedCallRedirectsTest	theFamilyTheHostAndTheSwitchDecide()	[fixture:staged] actual game required
 test	net.forbric.kernel.mixin.SupersededMixinsTest	theHopperProofMatchesWhatTheRealRepairWritesIntoTheRealClass()	[fixture:staged] actual game required
 test	net.forbric.kernel.mixin.SupersededMixinsTest	theProofMatchesWhatTheRealRepairWritesIntoTheRealClass()	[fixture:staged] staged NeoForge carrier absent
+test	net.forbric.kernel.mixin.ThinnedCallOrdinalsTest	releasedViaFabricPlusCountsOnTheMergedBody()	[fixture:staged] actual game required
+test	net.forbric.kernel.mixin.ThinnedCallOrdinalsTest	theRowIsWhatVanillaAndTheMergedBaseSay()	[fixture:staged] actual game required
 test	net.forbric.kernel.mixin.UncalledMethodCensusTest	theShippedTableIsExactlyWhatTheArtifactsSay()	[fixture:staged] $ROOT/forbric-loader/run/merged-base/patched-mc-merged-26.2.jar required
 test	net.forbric.kernel.mixin.WatchdogDumpEquivalenceTest	aDefinedUnknownHelperIsConfirmedMissingInsteadOfDeferredForever()	[fixture:staged] staged NeoForge carrier: $ROOT/forbric-loader/run/neoforge-runtime/neoforge-runtime.jar
 test	net.forbric.kernel.mixin.WatchdogDumpEquivalenceTest	actualDefinitionIsPendingUntilTheActualHelperIsDefinedAndRechecksChangedHelpers()	[fixture:staged] actual Fabric API fixture required

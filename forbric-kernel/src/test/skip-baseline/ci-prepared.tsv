@@ -102,6 +102,7 @@ test	net.forbric.kernel.mixin.MixinTwinRebindTest	releasedLiquidBounceMovesItsFa
 test	net.forbric.kernel.mixin.NestHostFieldWritesTest	actualC2meVolatileAndSynchronizedGuardsAreNotSuppressed()	[fixture:third-party] build/compat-inputs/c2me-barrel-20261001/alpha-worldgen.jar absent
 test	net.forbric.kernel.mixin.PostMixinFixupsAliasTargetTest	everyShippedFabricRegistrySyncHasExactlyTheWarningsCheckRepaired()	[fixture:third-party] no fabric-registry-sync in the compatibility packs on this machine
 test	net.forbric.kernel.mixin.ReplacedCallRedirectsTest	releasedViaFabricPlusMovesItsThreeRedirects()	[fixture:third-party] ../build/random100-20260929/downloads/dmLiENU0/ViaFabricPlus-5.0.2.jar absent
+test	net.forbric.kernel.mixin.ThinnedCallOrdinalsTest	releasedViaFabricPlusCountsOnTheMergedBody()	[fixture:third-party] ../build/lb-vfp/jars/ViaFabricPlus-5.0.2.jar absent
 test	net.forbric.kernel.runtime.KernelFabricFluidBehaviorsTest	aLookupThatBreaksAnswersNoBehaviourType()	[fixture:third-party] sweep pack absent
 test	net.forbric.kernel.runtime.KernelFabricFluidBehaviorsTest	aQuestionDuringTheFirstResolveWaitsForIt()	[fixture:third-party] sweep pack absent
 test	net.forbric.kernel.runtime.KernelFabricFluidBehaviorsTest	aRegisteredTagAnswersNeoForgesQuestionsFromItsBehaviour()	[fixture:third-party] sweep pack absent
