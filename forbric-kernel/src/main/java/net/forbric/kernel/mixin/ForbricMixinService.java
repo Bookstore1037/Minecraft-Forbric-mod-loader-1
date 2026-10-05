@@ -296,6 +296,9 @@ public final class ForbricMixinService
 		KernelClientHookMixinAnchors.adapt(node, this::mergedBaseNodeWithCode);
 		GuiItemCaptureMixinAdapter.adapt(node, this::mergedBaseNodeWithCode);
 		BarrelRollCameraAdapter.adapt(node, this::mergedBaseNodeWithCode);
+		// …and a redirect of a vanilla call the carrier replaced at the same place, whose handler only conditions it,
+		// forwards the carrier's call there instead.
+		ReplacedCallRedirects.adapt(node, this::mergedBaseNodeWithCode);
 		// …and a locals capture that would throw an Error no handler sees is made to skip and warn instead.
 		MixinLocalsCapture.soften(node);
 		// …and an injection point naming a call the surviving carrier gave extra parameters is pointed at the
