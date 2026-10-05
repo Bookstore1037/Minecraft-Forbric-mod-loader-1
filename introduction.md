@@ -288,7 +288,11 @@ Fabric and NeoForge need opposite states in the constructor, so the kernel has t
 - `ClientEntrypointHookInjector` → `KernelLifecycle.onClientEntrypoints()`, before `Options` exists: reopen the
   registries (and MinecraftForge's registry gates), construct MinecraftForge mods that were held back because they
   reached for `Minecraft` too early, run Fabric `main` then `client` entrypoints (Fabric's `Hooks.startClient`
-  order), re-close and re-freeze, open late CLIENT configs, then declare datapack registries.
+  order), re-close and re-freeze, open late CLIENT configs, then declare datapack registries. Around that freeze is
+  Fabric's registry freeze point: with fabric-registry-sync installed, a Fabric mod's `@Inject` at the HEAD or TAIL of
+  `BuiltInRegistries.freeze()`, or just before or after `bootStrap()`'s call of it, runs there
+  (`FabricFreezeHookMixinAdapter`), where native Fabric freezes — after the entrypoints, with `Minecraft.getInstance()`
+  set. LiquidBounce builds its creative tabs from such an injector; left in `Bootstrap` it found no client and died.
 - `NeoClientSetupHookInjector` at the merged base's `ClientModLoader.finish()` call →
   `KernelLifecycle.onNeoClientSetup()`, after `options` is assigned: verify the CLIENT_INIT bridges, preload the
   client resource manager (MinecraftForge runs mod loading inside the first reload, and its mods expect their
@@ -510,7 +514,9 @@ Mixin (via MixinWeaverSlot) → NativeCoremodParity → PostMixinFixups → Inte
 Notable repairs by family (read each class's javadoc for the case that motivated it):
 
 - **Merge invariants** — `ForbricMergedBaseCompatTransformer` (lambda bootstrap handles vs. static-ness, the
-  MinecraftForge `getFluidType()` bridge, key-mapping `MAP` initializer, and retargeting the base's baked-in
+  MinecraftForge `getFluidType()` bridge, key-mapping `MAP` initializer and vanilla's `KeyMapping.MAP` back as a view of
+  the mappings by key (`KernelKeyMappingMap`; both ecosystems re-type it, and LiquidBounce reads it on every key press in
+  a screen), and retargeting the base's baked-in
   calls to `net/forbric/loader/impl/…` onto `net.forbric.kernel.interop`), `DuplicateLambdaPruneInjector`
   (orphaned lambdas a name-only mixin selector would bind to), `WidenedFieldTwinInjector` (vanilla-descriptor
   twins of re-typed fields), `MethodBodyNeuter`.
@@ -657,7 +663,11 @@ spliced in, so "a Forge-family class" describes most of the jar.
 Rather than drop, the kernel moves a guest injector when the merge relocated what it wants. Each adapter is
 narrow and table- or proof-driven:
 
-`MixinRetarget` and `MixinStubRebind` (delegating stubs → the overload carrying the body), `MixinOverloadPin`
+`MixinRetarget` and `MixinStubRebind` (delegating stubs → the overload carrying the body; a stub that first works an
+argument out — `Player.doSweepAttack`'s hitbox, `EntityFluidInteraction.update`'s predicate,
+`Entity.restituteMovementAfterCollisions`' block position — only where every other caller of the body is a method that
+called the stub's signature in vanilla, so `MappedRegistry.register(int, …)`, which NeoForge's registry snapshot calls
+directly, keeps fabric-registry-sync's callback off it), `MixinOverloadPin`
 (a name-only `@Inject` that Mixin would bind to the other ecosystem's overload, declared first, is pinned to the one
 overload its handler fits — only when the first cannot take the handler; otherwise it is explained),
 `MixinMergedTwin` (`$forbricneo` renamed anonymous twins), `MixinAnonymousRetarget` + `MergedBaseAnonymousDrift`
@@ -707,13 +717,20 @@ or bed — fails too, as it did before the census. On a whole `RENAME` a handler
 every handler of its mixin that shares it in the same method. On the bytes alone R3 had moved injectors into unrelated
 methods of the same shape (text_styles' colour hook onto the shadow colour, ViaFabricPlus' item-use and hotbar-key
 hooks into other vanilla methods, goldenpotions' tab icon into another tab's lambda) and into the renamed tooltip body,
-where they read as fitting. Those four no longer move: ViaFabricPlus 5.0.2's two are confirmed required losses, beside
-the five it already had, so it still stops under the strict policy. `-Dforbric.mixinRetarget.renameCensus=off` moves on
+where they read as fitting. Those four no longer move by R3: ViaFabricPlus 5.0.2's two are redirects of calls NeoForge
+replaced in place, which `ReplacedCallRedirects` moves instead (below). `-Dforbric.mixinRetarget.renameCensus=off` moves on
 the bytes alone again, `-Dforbric.mixinRetarget.renameCensus.leftExit=off` keeps every handler that can cancel out of a
 piece, and `-Dforbric.mixinRetarget.renameCensus.uncalled=off` keeps every injector out of the `UNCALLED` body), and per-surface Fabric adapters
-(`FabricBlockBreakMixinAdapter`, `FabricEntityMixinAnchors`, `FabricClientMixinAnchors`,
-`FabricEnchantmentMixinAdapter`, `FabricMiningMixinAdapter`, `FabricSoundMixinAdapter`,
-`FabricServerLanguageMixinAdapter`). `GuestInjectorPruner` (COREMOD) trims individual injectors from a guest mixin
+(`FabricBlockBreakMixinAdapter`, `FabricEntityMixinAnchors`, `FabricClientMixinAnchors` — which also stands any Fabric
+`@Inject` just before or after `Gui.extractRenderState`'s screen draw at NeoForge's `ClientHooks.extractScreen`, where the
+merged body draws the screen; LiquidBounce draws its whole browser menu there — `FabricEnchantmentMixinAdapter`,
+`FabricMiningMixinAdapter`, `FabricSoundMixinAdapter`, `FabricServerLanguageMixinAdapter`), and `ReplacedCallRedirects`: a
+`@Redirect` of a vanilla call the carrier replaced in place with its own, whose handler only puts a condition around
+forwarding the vanilla call, moves onto the carrier's call and forwards that one, along a row that says where the two
+stand for each other, which operands carry the same values and why (ViaFabricPlus' hotbar keys —
+`KeyMapping.matches` → `isActiveAndMatches`, item use — `ItemStack.isSameItem` → `CommonHooks.canContinueUsing`, with the
+handler's own logic keeping vanilla's argument order, and shovel paths — `FLATTENABLES.get` → the state's
+`SHOVEL_FLATTEN` modification; only for the families whose own class made the vanilla call; `-Dforbric.replacedCallRedirects=off`). `GuestInjectorPruner` (COREMOD) trims individual injectors from a guest mixin
 class where the kernel replaces their function, and, at the end of the bytecode provider's adapters, the injectors the
 verdict found Mixin would reject outright (§7.3) — each only while the same rule still says so of the node Mixin is about
 to receive, so an injector an adapter already moved where it fits stays. Several adapters read shipped tables under
