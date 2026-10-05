@@ -93,7 +93,7 @@ public final class ForbricMergedBaseCompatTransformer implements ClassTransforme
 	}
 
 	/** The repairs {@link #transform} runs, in its order; a test pins the two lists against each other. */
-	static final List<String> REPAIRS = List.of("repairLambdaBootstrapHandles", "addBlockStateModelConflictResolvers", "addBlockStateAppearanceResolver", "addMissingForgeFluidTypeBridge", "addMissingForgeKeyMappingLookupInitializer", "routeKeyMappingClickToPopulatedLookup", "giveKeyMappingItsMinecraftForgeFace", "giveKeyMappingItsVanillaMap", "giveTheVanillaParticleMapAViewOfTheLiveOne", "giveFeaturesPerStepItsVanillaDescriptorBack", "letDungeonsGenerateWithoutTheDataMap", "restoreDoublePrecisionToTheRandomSources", "convertRadiansWithVanillasFoldedConstant", "saveTheHeightmapsVanillaSaves", "guardNeoForgesWorldModifierPass", "letForeignResourceConditionsThrough", "letForeignResourceConditionsThroughMinecraftForge", "letFabricResourceConditionsDecide", "translateAGuestsPrivateSkipMarker", "serveDefaultAttributesBothEcosystems", "restoreForgeClientInit", "restoreForgeGeometryReload", "nameTheReloadListenersNeoForgeRefusesToName", "dropInterfaceDefaultShadowingOverrides", "tolerateEmptyCreativeTabStacks", "routePlaceItemHookToNeoForge", "bridgeOrphanedPipRenderers", "keepForgeOutboundProtocolCurrent", "surviveTheMissingForgeModelDataManager", "dropTheWindowTitlesLoaderBrand", "keepTheSaveOffTheTeardownsFailurePath", "postNeoForgesItemTooltipEvent", "askNeoForgeWhatAnItemsAttributesAre", "readTheSpawnReasonThatIsActuallyWritten", "giveTheUnwrittenLoggerAValue", "addTheMissingCapabilityLifecycleStubs", "addTheMissingNbtBuilderFactory", "postMinecraftForgesReloadListenerEvent", "giveMinecraftForgesReloadEventItsConditionContext", "letMinecraftForgeIngredientTypesDecode", "letMinecraftForgeFluidsChooseTheirModel", "giveMinecraftForgesParticleLookupItsFirstVariant", "dropStubsThatBypassARealSuperclassMethod", "inlineTheSwitchMapTheMergeLost", "vetoUnjudgeableOverlayConditions", "hideTheLegacyLootModifierIndexFromTheDirectoryScan", "letModdedFeatureFlagsRegister", "dropTheKeyModifierSuffixBeforeParsingAKeyName", "letTheAtlasLowerItsMipLevelLikeVanilla", "wrapTheStreamsVanillaWraps", "returnFromANestedBootstrapBeforeItsTail", "letBothEcosystemsSetBurnTime", "letMinecraftForgeSeeSpawnerMobs", "letMinecraftForgeAddPackFinders");
+	static final List<String> REPAIRS = List.of("repairLambdaBootstrapHandles", "addBlockStateModelConflictResolvers", "addBlockStateAppearanceResolver", "addMissingForgeFluidTypeBridge", "addMissingForgeKeyMappingLookupInitializer", "routeKeyMappingClickToPopulatedLookup", "giveKeyMappingItsMinecraftForgeFace", "giveKeyMappingItsVanillaMap", "giveTheVanillaParticleMapAViewOfTheLiveOne", "giveFeaturesPerStepItsVanillaDescriptorBack", "letDungeonsGenerateWithoutTheDataMap", "restoreDoublePrecisionToTheRandomSources", "convertRadiansWithVanillasFoldedConstant", "callVanillasWriteByteAgain", "saveTheHeightmapsVanillaSaves", "guardNeoForgesWorldModifierPass", "letForeignResourceConditionsThrough", "letForeignResourceConditionsThroughMinecraftForge", "letFabricResourceConditionsDecide", "translateAGuestsPrivateSkipMarker", "serveDefaultAttributesBothEcosystems", "restoreForgeClientInit", "restoreForgeGeometryReload", "nameTheReloadListenersNeoForgeRefusesToName", "dropInterfaceDefaultShadowingOverrides", "tolerateEmptyCreativeTabStacks", "routePlaceItemHookToNeoForge", "bridgeOrphanedPipRenderers", "keepForgeOutboundProtocolCurrent", "surviveTheMissingForgeModelDataManager", "dropTheWindowTitlesLoaderBrand", "keepTheSaveOffTheTeardownsFailurePath", "postNeoForgesItemTooltipEvent", "askNeoForgeWhatAnItemsAttributesAre", "readTheSpawnReasonThatIsActuallyWritten", "giveTheUnwrittenLoggerAValue", "addTheMissingCapabilityLifecycleStubs", "addTheMissingNbtBuilderFactory", "postMinecraftForgesReloadListenerEvent", "giveMinecraftForgesReloadEventItsConditionContext", "letMinecraftForgeIngredientTypesDecode", "letMinecraftForgeFluidsChooseTheirModel", "giveMinecraftForgesParticleLookupItsFirstVariant", "dropStubsThatBypassARealSuperclassMethod", "inlineTheSwitchMapTheMergeLost", "vetoUnjudgeableOverlayConditions", "hideTheLegacyLootModifierIndexFromTheDirectoryScan", "letModdedFeatureFlagsRegister", "dropTheKeyModifierSuffixBeforeParsingAKeyName", "letTheAtlasLowerItsMipLevelLikeVanilla", "wrapTheStreamsVanillaWraps", "returnFromANestedBootstrapBeforeItsTail", "letBothEcosystemsSetBurnTime", "letMinecraftForgeSeeSpawnerMobs", "letMinecraftForgeAddPackFinders");
 
 	private static final String NEO_EVENT_HOOKS_BINARY = "net.neoforged.neoforge.event.EventHooks";
 
@@ -142,6 +142,11 @@ public final class ForbricMergedBaseCompatTransformer implements ClassTransforme
 		out.add(fixed("convertRadiansWithVanillasFoldedConstant", "net/minecraft/world/entity/Entity",
 				"every angle the game computes from a vector is off in the eighth digit — the merged base divides by "
 						+ "pi at run time where vanilla multiplies by a constant it folded in float"));
+		out.add(vanillaWriteByteEnabled()
+				? fixed("callVanillasWriteByteAgain", PLAYER_ABILITIES_PACKET,
+						"a packet writes its byte through NeoForge's writeByte(byte), so a mixin on vanilla's writeByte(int) "
+								+ "there binds nothing — ViaFabricPlus' old-protocol ability flags, a required injector")
+				: scanned("callVanillasWriteByteAgain", "-D" + VANILLA_WRITE_BYTE_PROPERTY + "=off"));
 		out.add(savedHeightmapsEnabled()
 				? fixed("saveTheHeightmapsVanillaSaves", CHUNK_STATUS,
 						"an unfinished chunk is saved with the two worldgen heightmaps vanilla never persists, and "
@@ -301,6 +306,7 @@ public final class ForbricMergedBaseCompatTransformer implements ClassTransforme
 			changed |= claim(reporter, "letDungeonsGenerateWithoutTheDataMap", letDungeonsGenerateWithoutTheDataMap(node));
 			changed |= claim(reporter, "restoreDoublePrecisionToTheRandomSources", restoreDoublePrecisionToTheRandomSources(node));
 			changed |= claim(reporter, "convertRadiansWithVanillasFoldedConstant", convertRadiansWithVanillasFoldedConstant(node));
+			changed |= claim(reporter, "callVanillasWriteByteAgain", callVanillasWriteByteAgain(node));
 			changed |= claim(reporter, "saveTheHeightmapsVanillaSaves", saveTheHeightmapsVanillaSaves(node));
 			changed |= claim(reporter, "guardNeoForgesWorldModifierPass", guardNeoForgesWorldModifierPass(node));
 			changed |= claim(reporter, "letForeignResourceConditionsThrough", letForeignResourceConditionsThrough(node));
@@ -2098,6 +2104,64 @@ public final class ForbricMergedBaseCompatTransformer implements ClassTransforme
 				+ "(%d site(s)) — the merged body divided by pi at run time, which is a different number in the "
 				+ "eighth digit and moves every angle computed from a vector",
 				node.name.replace('/', '.'), folded);
+		return true;
+	}
+
+	private static final String FRIENDLY_BYTE_BUF = "net/minecraft/network/FriendlyByteBuf";
+	private static final String REGISTRY_FRIENDLY_BYTE_BUF = "net/minecraft/network/RegistryFriendlyByteBuf";
+	private static final String PLAYER_ABILITIES_PACKET = "net/minecraft/network/protocol/game/ServerboundPlayerAbilitiesPacket";
+	/** NeoForge's {@code IFriendlyByteBufExtension.writeByte(byte)}: {@code return self().writeByte(value);}, nothing else. */
+	private static final String WRITE_BYTE_EXTENSION = "(B)Lnet/minecraft/network/FriendlyByteBuf;";
+	/** Vanilla's {@code FriendlyByteBuf.writeByte(int)}, which both vanilla and MinecraftForge's game call. */
+	private static final String WRITE_BYTE_VANILLA = "(I)Lnet/minecraft/network/FriendlyByteBuf;";
+	static final String VANILLA_WRITE_BYTE_PROPERTY = "forbric.vanillaWriteByte";
+
+	static boolean vanillaWriteByteEnabled() {
+		return !"off".equalsIgnoreCase(System.getProperty(VANILLA_WRITE_BYTE_PROPERTY, "on"));
+	}
+
+	/**
+	 * Calls vanilla's {@code FriendlyByteBuf.writeByte(int)} again where the merged body calls NeoForge's
+	 * {@code writeByte(byte)}.
+	 *
+	 * <p>NeoForge's {@code IFriendlyByteBufExtension} declares {@code writeByte(byte)}, which only forwards to
+	 * {@code writeByte(int)}. Recompiling vanilla's source with that interface in place, javac binds every
+	 * {@code writeByte} handed a {@code byte} to the extension's overload — the more specific one — so NeoForge's game
+	 * calls it where vanilla and MinecraftForge's game call {@code writeByte(int)}: fourteen sites in ten network
+	 * {@code write} methods, through {@code FriendlyByteBuf} or {@code RegistryFriendlyByteBuf} as vanilla does. The
+	 * merge kept NeoForge's bodies, and a mixin anchored on vanilla's call bound nothing: ViaFabricPlus' 1.15.2 ability
+	 * flags redirect {@code ServerboundPlayerAbilitiesPacket.write}'s {@code writeByte(int)}, a required injector, so
+	 * the strict policy stopped the client as soon as a world loaded.
+	 *
+	 * <p>The swap changes no behaviour: the same receiver and the same value reach the same method, and a {@code byte}
+	 * is already an {@code int} on the operand stack, so no instruction is added and no frame changes. What it costs:
+	 * a NeoForge mod anchored on {@code writeByte(byte)} in one of these vanilla methods no longer finds it — no mixin
+	 * among the 861 mod jars this was measured on names that overload; ViaFabricPlus' names vanilla's.
+	 * {@code -Dforbric.vanillaWriteByte=off} leaves NeoForge's calls.
+	 */
+	private static boolean callVanillasWriteByteAgain(ClassNode node) {
+		if (!node.name.startsWith("net/minecraft/") || !vanillaWriteByteEnabled()) return false;
+		int swapped = 0;
+		List<String> methods = new ArrayList<>();
+		for (MethodNode method : node.methods) {
+			boolean touched = false;
+			for (AbstractInsnNode insn = method.instructions.getFirst(); insn != null; insn = insn.getNext()) {
+				if (insn instanceof MethodInsnNode call && call.getOpcode() == Opcodes.INVOKEVIRTUAL
+						&& (call.owner.equals(FRIENDLY_BYTE_BUF) || call.owner.equals(REGISTRY_FRIENDLY_BYTE_BUF))
+						&& call.name.equals("writeByte")
+						&& call.desc.equals(WRITE_BYTE_EXTENSION)) {
+					call.desc = WRITE_BYTE_VANILLA;
+					touched = true;
+					swapped++;
+				}
+			}
+			if (touched) methods.add(method.name + method.desc);
+		}
+		if (swapped == 0) return false;
+		ForbricLog.info("[Forbric/MergedBaseCompat] %s writes its bytes through vanilla's FriendlyByteBuf.writeByte(int) "
+				+ "again (%d site(s): %s) — NeoForge's recompile bound them to its extension's writeByte(byte), which only "
+				+ "forwards there, so a mixin anchored on vanilla's call found nothing",
+				node.name.replace('/', '.'), swapped, String.join(", ", methods));
 		return true;
 	}
 

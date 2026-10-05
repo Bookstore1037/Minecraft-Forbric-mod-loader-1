@@ -944,6 +944,8 @@ test	net.forbric.kernel.transform.MergedBaseTooltipOrderScrapeTest	theScrapeOfTh
 test	net.forbric.kernel.transform.MergedBaseUnwrittenStaticsTest	aClassWithAWrittenLoggerIsLeftAlone()	[fixture:staged] staged merged base absent
 test	net.forbric.kernel.transform.MergedBaseUnwrittenStaticsTest	theCensusHasNotChanged()	[fixture:staged] staged merged base absent
 test	net.forbric.kernel.transform.MergedBaseUnwrittenStaticsTest	theLoggerIsRepaired()	[fixture:staged] staged merged base absent
+test	net.forbric.kernel.transform.MergedBaseVanillaWriteByteTest	everyMergedSiteBecomesTheCallVanillaMakes()	[fixture:staged] merged base not staged
+test	net.forbric.kernel.transform.MergedBaseVanillaWriteByteTest	theExtensionsOverloadOnlyForwardsToVanillas()	[fixture:staged] NeoForge runtime not staged
 test	net.forbric.kernel.transform.MergedBaseWeightedVariantsFirstTest	aSecondPassChangesNothingFurther()	[fixture:staged] staged merged base absent
 test	net.forbric.kernel.transform.MergedBaseWeightedVariantsFirstTest	thePremiseTheFieldHasOneForgeReaderAndNoWriter()	[fixture:staged] staged merged base absent
 test	net.forbric.kernel.transform.MergedBaseWeightedVariantsFirstTest	theSiblingVariantClassIsUntouched()	[fixture:staged] staged merged base absent
