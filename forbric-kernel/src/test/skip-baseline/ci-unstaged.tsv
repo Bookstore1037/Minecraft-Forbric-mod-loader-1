@@ -477,6 +477,7 @@ test	net.forbric.kernel.runtime.KernelGameEntityEventsTest	aMinecraftForgeVetoCa
 test	net.forbric.kernel.runtime.KernelGameEntityEventsTest	anAlreadyCancelledEventIsNotCancelledTwice()	[fixture:staged] the staged carriers are absent
 test	net.forbric.kernel.runtime.KernelGameScreenEventsTest	allFourKeyPhasesForwardTheSameKeyAndRespectCancellation()	[fixture:staged] the staged game is absent
 test	net.forbric.kernel.runtime.KernelGameScreenEventsTest	initCallbacksChangeTheOriginalWidgetList()	[fixture:staged] the staged game is absent
+test	net.forbric.kernel.runtime.KernelKeyMappingMapTest	theViewGroupsTheMappingsByTheirCurrentKey()	[fixture:staged] the staged artifacts are absent
 test	net.forbric.kernel.runtime.KernelLootModifiersTest	switchedOffTheOriginalManagerIsHandedBack()	[fixture:staged] the staged artifacts are absent
 test	net.forbric.kernel.runtime.KernelLootModifiersTest	theViewHidesEveryLegacyIndexAndNothingElse()	[fixture:staged] the staged artifacts are absent
 test	net.forbric.kernel.runtime.KernelModFileInfoVersionTest	aPalReleaseVersionSupportsItsActualContainsCall()	[fixture:staged] staged carrier absent
@@ -862,6 +863,9 @@ test	net.forbric.kernel.transform.MergedBaseKeyMappingFaceTest	theForgeSetterRea
 test	net.forbric.kernel.transform.MergedBaseKeyMappingFaceTest	theLiveFieldsAreWrittenBeforeTheConstructorRegistersTheBinding()	[fixture:staged] $ROOT/forbric-loader/run/merged-base/patched-mc-merged-26.2.jar absent (reading net/minecraft/client/KeyMapping.class)
 test	net.forbric.kernel.transform.MergedBaseKeyMappingFaceTest	theModifierMappingIsByNameWithOneDeliberateException()	[fixture:game-side] the game-side set is not compiled
 test	net.forbric.kernel.transform.MergedBaseKeyMappingFaceTest	theNeoForgeAccessorsAreStillThere()	[fixture:staged] $ROOT/forbric-loader/run/merged-base/patched-mc-merged-26.2.jar absent (reading net/minecraft/client/KeyMapping.class)
+test	net.forbric.kernel.transform.MergedBaseKeyMappingMapTest	aSecondPassAndAnotherClassAreLeftAlone()	[fixture:staged] staged merged base absent
+test	net.forbric.kernel.transform.MergedBaseKeyMappingMapTest	itIsAViewOfAllAssignedRightAfterAll()	[fixture:staged] staged merged base absent
+test	net.forbric.kernel.transform.MergedBaseKeyMappingMapTest	vanillasMapIsBackAndPublicSoAModReadingItLinks()	[fixture:staged] staged merged base absent
 test	net.forbric.kernel.transform.MergedBaseKeyModifierSuffixTest	theRealMergedBaseStillNeedsItAndStaysVerifiable()	[fixture:staged] staged merged base absent — skipping real-bytecode check
 test	net.forbric.kernel.transform.MergedBaseLeftNullFieldsTest	everyFieldWithAReaderIsWrittenByItsOwnerAfterTheTransformer()	[fixture:staged] staged artifact absent: $ROOT/forbric-loader/run/merged-base/patched-mc-merged-26.2.jar
 test	net.forbric.kernel.transform.MergedBaseLeftNullFieldsTest	forgeDataIsWrittenByForgesOwnPingHookAndNullGuardedByItsOnlyReader()	[fixture:staged] staged Forge carrier absent: $ROOT/forbric-loader/run/forge-runtime/forge-runtime.jar

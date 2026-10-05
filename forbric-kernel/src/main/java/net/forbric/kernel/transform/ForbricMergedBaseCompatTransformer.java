@@ -93,7 +93,7 @@ public final class ForbricMergedBaseCompatTransformer implements ClassTransforme
 	}
 
 	/** The repairs {@link #transform} runs, in its order; a test pins the two lists against each other. */
-	static final List<String> REPAIRS = List.of("repairLambdaBootstrapHandles", "addBlockStateModelConflictResolvers", "addBlockStateAppearanceResolver", "addMissingForgeFluidTypeBridge", "addMissingForgeKeyMappingLookupInitializer", "routeKeyMappingClickToPopulatedLookup", "giveKeyMappingItsMinecraftForgeFace", "giveTheVanillaParticleMapAViewOfTheLiveOne", "giveFeaturesPerStepItsVanillaDescriptorBack", "letDungeonsGenerateWithoutTheDataMap", "restoreDoublePrecisionToTheRandomSources", "convertRadiansWithVanillasFoldedConstant", "saveTheHeightmapsVanillaSaves", "guardNeoForgesWorldModifierPass", "letForeignResourceConditionsThrough", "letForeignResourceConditionsThroughMinecraftForge", "letFabricResourceConditionsDecide", "translateAGuestsPrivateSkipMarker", "serveDefaultAttributesBothEcosystems", "restoreForgeClientInit", "restoreForgeGeometryReload", "nameTheReloadListenersNeoForgeRefusesToName", "dropInterfaceDefaultShadowingOverrides", "tolerateEmptyCreativeTabStacks", "routePlaceItemHookToNeoForge", "bridgeOrphanedPipRenderers", "keepForgeOutboundProtocolCurrent", "surviveTheMissingForgeModelDataManager", "dropTheWindowTitlesLoaderBrand", "keepTheSaveOffTheTeardownsFailurePath", "postNeoForgesItemTooltipEvent", "askNeoForgeWhatAnItemsAttributesAre", "readTheSpawnReasonThatIsActuallyWritten", "giveTheUnwrittenLoggerAValue", "addTheMissingCapabilityLifecycleStubs", "addTheMissingNbtBuilderFactory", "postMinecraftForgesReloadListenerEvent", "giveMinecraftForgesReloadEventItsConditionContext", "letMinecraftForgeIngredientTypesDecode", "letMinecraftForgeFluidsChooseTheirModel", "giveMinecraftForgesParticleLookupItsFirstVariant", "dropStubsThatBypassARealSuperclassMethod", "inlineTheSwitchMapTheMergeLost", "vetoUnjudgeableOverlayConditions", "hideTheLegacyLootModifierIndexFromTheDirectoryScan", "letModdedFeatureFlagsRegister", "dropTheKeyModifierSuffixBeforeParsingAKeyName", "letTheAtlasLowerItsMipLevelLikeVanilla", "wrapTheStreamsVanillaWraps", "returnFromANestedBootstrapBeforeItsTail", "letBothEcosystemsSetBurnTime", "letMinecraftForgeSeeSpawnerMobs", "letMinecraftForgeAddPackFinders");
+	static final List<String> REPAIRS = List.of("repairLambdaBootstrapHandles", "addBlockStateModelConflictResolvers", "addBlockStateAppearanceResolver", "addMissingForgeFluidTypeBridge", "addMissingForgeKeyMappingLookupInitializer", "routeKeyMappingClickToPopulatedLookup", "giveKeyMappingItsMinecraftForgeFace", "giveKeyMappingItsVanillaMap", "giveTheVanillaParticleMapAViewOfTheLiveOne", "giveFeaturesPerStepItsVanillaDescriptorBack", "letDungeonsGenerateWithoutTheDataMap", "restoreDoublePrecisionToTheRandomSources", "convertRadiansWithVanillasFoldedConstant", "saveTheHeightmapsVanillaSaves", "guardNeoForgesWorldModifierPass", "letForeignResourceConditionsThrough", "letForeignResourceConditionsThroughMinecraftForge", "letFabricResourceConditionsDecide", "translateAGuestsPrivateSkipMarker", "serveDefaultAttributesBothEcosystems", "restoreForgeClientInit", "restoreForgeGeometryReload", "nameTheReloadListenersNeoForgeRefusesToName", "dropInterfaceDefaultShadowingOverrides", "tolerateEmptyCreativeTabStacks", "routePlaceItemHookToNeoForge", "bridgeOrphanedPipRenderers", "keepForgeOutboundProtocolCurrent", "surviveTheMissingForgeModelDataManager", "dropTheWindowTitlesLoaderBrand", "keepTheSaveOffTheTeardownsFailurePath", "postNeoForgesItemTooltipEvent", "askNeoForgeWhatAnItemsAttributesAre", "readTheSpawnReasonThatIsActuallyWritten", "giveTheUnwrittenLoggerAValue", "addTheMissingCapabilityLifecycleStubs", "addTheMissingNbtBuilderFactory", "postMinecraftForgesReloadListenerEvent", "giveMinecraftForgesReloadEventItsConditionContext", "letMinecraftForgeIngredientTypesDecode", "letMinecraftForgeFluidsChooseTheirModel", "giveMinecraftForgesParticleLookupItsFirstVariant", "dropStubsThatBypassARealSuperclassMethod", "inlineTheSwitchMapTheMergeLost", "vetoUnjudgeableOverlayConditions", "hideTheLegacyLootModifierIndexFromTheDirectoryScan", "letModdedFeatureFlagsRegister", "dropTheKeyModifierSuffixBeforeParsingAKeyName", "letTheAtlasLowerItsMipLevelLikeVanilla", "wrapTheStreamsVanillaWraps", "returnFromANestedBootstrapBeforeItsTail", "letBothEcosystemsSetBurnTime", "letMinecraftForgeSeeSpawnerMobs", "letMinecraftForgeAddPackFinders");
 
 	private static final String NEO_EVENT_HOOKS_BINARY = "net.neoforged.neoforge.event.EventHooks";
 
@@ -122,6 +122,8 @@ public final class ForbricMergedBaseCompatTransformer implements ClassTransforme
 				"key presses are looked up in the lookup registration never populated — MinecraftForge mods' keys never fire"));
 		out.add(fixed("giveKeyMappingItsMinecraftForgeFace", KEY_MAPPING,
 				"KeyMapping lacks the MinecraftForge-typed accessors — a Forge mod setting a conflict context NoSuchMethodErrors"));
+		out.add(fixed("giveKeyMappingItsVanillaMap", KEY_MAPPING,
+				"KeyMapping has no vanilla-typed MAP — a mod reading it as a Map dies on NoSuchFieldError (LiquidBounce, on a key press)"));
 		out.add(fixed("giveTheVanillaParticleMapAViewOfTheLiveOne", PARTICLE_RESOURCES,
 				"the vanilla-typed particle provider map stays empty — particles registered the vanilla way never render"));
 		out.add(fixed("giveFeaturesPerStepItsVanillaDescriptorBack", CHUNK_GENERATOR,
@@ -293,6 +295,7 @@ public final class ForbricMergedBaseCompatTransformer implements ClassTransforme
 			changed |= claim(reporter, "addMissingForgeKeyMappingLookupInitializer", addMissingForgeKeyMappingLookupInitializer(node));
 			changed |= claim(reporter, "routeKeyMappingClickToPopulatedLookup", routeKeyMappingClickToPopulatedLookup(node));
 			changed |= claim(reporter, "giveKeyMappingItsMinecraftForgeFace", giveKeyMappingItsMinecraftForgeFace(node));
+			changed |= claim(reporter, "giveKeyMappingItsVanillaMap", giveKeyMappingItsVanillaMap(node));
 			changed |= claim(reporter, "giveTheVanillaParticleMapAViewOfTheLiveOne", giveTheVanillaParticleMapAViewOfTheLiveOne(node));
 			changed |= claim(reporter, "giveFeaturesPerStepItsVanillaDescriptorBack", giveFeaturesPerStepItsVanillaDescriptorBack(node));
 			changed |= claim(reporter, "letDungeonsGenerateWithoutTheDataMap", letDungeonsGenerateWithoutTheDataMap(node));
@@ -530,6 +533,7 @@ public final class ForbricMergedBaseCompatTransformer implements ClassTransforme
 	/** Vanilla's own descriptor for it, and the one fabric-api reads. */
 	private static final String ID_KEYED = "Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;";
 	private static final String KERNEL_PARTICLES = "net/forbric/kernel/runtime/KernelParticleProviders";
+	private static final String KERNEL_KEY_MAPPING_MAP = "net/forbric/kernel/runtime/KernelKeyMappingMap";
 	/** Old owner → the kernel class that now carries the method, for hooks the merged base still names. */
 	private static final Map<String, String> LEGACY_INTEROP_OWNERS = Map.of(
 			"net/forbric/loader/impl/compat/ForbricCustomPayloadInterop", "net/forbric/kernel/interop/PayloadInterop",
@@ -2511,6 +2515,53 @@ public final class ForbricMergedBaseCompatTransformer implements ClassTransforme
 				field.name = "providers";
 			}
 		}
+	}
+
+	/**
+	 * Gives {@code KeyMapping} vanilla's {@code MAP:Ljava/util/Map;} back, as a view of the mappings by key.
+	 *
+	 * <p>Both ecosystems re-type vanilla's {@code MAP} to their own {@code KeyMappingLookup}; the merged class keeps
+	 * those two ({@link #routeKeyMappingClickToPopulatedLookup}) and not vanilla's, so a mod compiled against vanilla
+	 * that reads {@code KeyMapping.MAP} as a {@code Map} gets {@code NoSuchFieldError}. LiquidBounce reads it on every
+	 * key press while a screen is open (its inventory movement), so the client died the first time a key was pressed
+	 * in a world. Nothing in the merged game reads vanilla's descriptor, so the field is added rather than moved, and
+	 * its value is {@code KernelKeyMappingMap}'s view of vanilla's {@code ALL}, which the merged class still keeps
+	 * and fills: what vanilla's map holds, grouped on each read.
+	 *
+	 * <p>Public, because the access wideners that would make vanilla's private field accessible have already run when
+	 * this repair adds it (the same reason {@link #giveFeaturesPerStepItsVanillaDescriptorBack} widens its field).
+	 * Assigned right after {@code ALL} in {@code <clinit>}, before any mapping exists.
+	 */
+	private static boolean giveKeyMappingItsVanillaMap(ClassNode node) {
+		if (!KEY_MAPPING.equals(node.name)) return false;
+		if (hasField(node, "MAP", "Ljava/util/Map;") || !hasField(node, "ALL", "Ljava/util/Map;")) return false;
+		if (!hasField(node, "MAP", "Lnet/neoforged/neoforge/client/settings/KeyMappingLookup;")) return false;
+		MethodNode clinit = findMethod(node, "<clinit>", "()V");
+		if (clinit == null) return false;
+		FieldInsnNode all = null;
+		for (AbstractInsnNode insn : clinit.instructions) {
+			if (insn instanceof FieldInsnNode put && put.getOpcode() == Opcodes.PUTSTATIC && node.name.equals(put.owner)
+					&& "ALL".equals(put.name) && "Ljava/util/Map;".equals(put.desc)) {
+				if (all != null) return false;
+				all = put;
+			}
+		}
+		if (all == null) return false;
+		node.fields.add(new FieldNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_FINAL, "MAP", "Ljava/util/Map;",
+				"Ljava/util/Map<Lcom/mojang/blaze3d/platform/InputConstants$Key;Ljava/util/List<Lnet/minecraft/client/KeyMapping;>;>;",
+				null));
+		InsnList view = new InsnList();
+		view.add(new FieldInsnNode(Opcodes.GETSTATIC, node.name, "ALL", "Ljava/util/Map;"));
+		view.add(new MethodInsnNode(Opcodes.INVOKESTATIC, KERNEL_KEY_MAPPING_MAP, "vanillaView",
+				"(Ljava/util/Map;)Ljava/lang/Object;", false));
+		view.add(new TypeInsnNode(Opcodes.CHECKCAST, "java/util/Map"));
+		view.add(new FieldInsnNode(Opcodes.PUTSTATIC, node.name, "MAP", "Ljava/util/Map;"));
+		clinit.instructions.insert(all, view);
+		clinit.maxStack = Math.max(clinit.maxStack, 1);
+		ForbricLog.info("[Forbric/MergedBaseCompat] KeyMapping.MAP has vanilla's descriptor again, as a view of the key "
+				+ "mappings by key — both ecosystems re-typed it to their own KeyMappingLookup, so a mod reading it as "
+				+ "vanilla's Map could not link to it");
+		return true;
 	}
 
 	/**
