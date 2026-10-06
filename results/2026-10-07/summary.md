@@ -1,5 +1,3 @@
-Latest nightly: [results/2026-10-07/summary.md](results/2026-10-07/summary.md)
-
 # Forbric nightly 2026-10-07: FAIL
 
 | | |
