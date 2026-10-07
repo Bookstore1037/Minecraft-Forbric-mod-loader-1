@@ -363,6 +363,10 @@ public final class KernelFabricEcosystem {
 					ForbricLog.warn("[Forbric/Mixin] mixin config %s DISABLED by -Dforbric.disableMixinConfigs — "
 							+ "that module's mixins will not apply",
 							MixinConfigOwners.describe(decl.config()));
+					net.forbric.api.CompatibilityFindings.record(new net.forbric.api.CompatibilityFinding(
+							"mixin-config-disabled:" + decl.config(), mod.getMetadata().getId(), "Mixin config",
+							"MixinConfigPolicy", net.forbric.api.CompatibilityFinding.Confidence.CONFIRMED, false,
+							"mixin config " + decl.config() + " disabled — its mixins will not apply", List.of()));
 					continue;
 				}
 

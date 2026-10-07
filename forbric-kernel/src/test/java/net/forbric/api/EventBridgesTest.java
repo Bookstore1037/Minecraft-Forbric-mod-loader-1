@@ -38,6 +38,7 @@ class EventBridgesTest {
 	void clear() {
 		switchBefore = System.getProperty(EventBridges.SWITCH_NAME);
 		EventBridges.reset();
+		CompatibilityFindings.reset();
 	}
 
 	@AfterEach
@@ -45,6 +46,7 @@ class EventBridgesTest {
 		if (switchBefore == null) System.clearProperty(EventBridges.SWITCH_NAME);
 		else System.setProperty(EventBridges.SWITCH_NAME, switchBefore);
 		EventBridges.reset();
+		CompatibilityFindings.reset();
 	}
 
 	@Test
@@ -65,6 +67,42 @@ class EventBridgesTest {
 
 		EventBridges.installed(GameEventBridge.SERVER_STARTED);
 		assertTrue(EventBridges.verify(GameEventBridge.Pass.GAME_BUS));
+	}
+
+	/** A missing bridge must land in the findings ledger; SERVER_STARTED must come out required. */
+	@Test
+	void aMissingBridgeIsRecordedInTheFindingsLedger() {
+		for (GameEventBridge b : GameEventBridge.values()) {
+			if (b.pass() == GameEventBridge.Pass.GAME_BUS && b != GameEventBridge.SERVER_STARTED) {
+				EventBridges.installed(b);
+			}
+		}
+		assertFalse(EventBridges.verify(GameEventBridge.Pass.GAME_BUS));
+
+		boolean recorded = CompatibilityFindings.all().stream().anyMatch(f ->
+				f.id().equals("event-bridge:" + GameEventBridge.SERVER_STARTED.name())
+						&& f.modId().equals("forbric")
+						&& f.confidence() == CompatibilityFinding.Confidence.CONFIRMED
+						&& f.required());
+		assertTrue(recorded, "the one missing SERVER_STARTED bridge must produce a CONFIRMED, required finding");
+	}
+
+	/** Every other bridge stays non-required: only SERVER_STARTED may block a strict launch. */
+	@Test
+	void aNonServerStartedBridgeIsRecordedAsNonRequired() {
+		for (GameEventBridge b : GameEventBridge.values()) {
+			if (b.pass() == GameEventBridge.Pass.GAME_BUS && b != GameEventBridge.SERVER_TICK_PRE) {
+				EventBridges.installed(b);
+			}
+		}
+		assertFalse(EventBridges.verify(GameEventBridge.Pass.GAME_BUS));
+
+		boolean recorded = CompatibilityFindings.all().stream().anyMatch(f ->
+				f.id().equals("event-bridge:" + GameEventBridge.SERVER_TICK_PRE.name())
+						&& f.modId().equals("forbric")
+						&& f.confidence() == CompatibilityFinding.Confidence.CONFIRMED
+						&& !f.required());
+		assertTrue(recorded, "a missing non-SERVER_STARTED bridge must produce a CONFIRMED, non-required finding");
 	}
 
 	/** The two passes run at different times; the client one must not be credited to the game-bus one. */

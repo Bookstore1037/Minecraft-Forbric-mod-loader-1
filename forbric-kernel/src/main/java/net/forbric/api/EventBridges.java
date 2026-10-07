@@ -17,6 +17,7 @@
 package net.forbric.api;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 import net.forbric.kernel.util.ForbricLog;
@@ -96,6 +97,13 @@ public final class EventBridges {
 				+ "crash, so it is named here in full:", missing.size(), declared, pass);
 		for (GameEventBridge bridge : missing) {
 			ForbricLog.error("[Forbric/EventMux]   %s (%s) — %s", bridge, bridge.event(), bridge.cost());
+			// A missing bridge is a confirmed feature loss, so it belongs in the ledger where the reports and the
+			// policy decision can see it. SERVER_STARTED is the one bridge whose absence makes singleplayer
+			// world-join fail outright ("Server is still starting"), so it is required — under strict policy a
+			// launch missing it must stop — while every other bridge is degraded-but-playable and stays non-required.
+			CompatibilityFindings.record(new CompatibilityFinding("event-bridge:" + bridge.name(), "forbric",
+					bridge.event(), "EventBridges.verify", CompatibilityFinding.Confidence.CONFIRMED,
+					bridge == GameEventBridge.SERVER_STARTED, bridge.cost(), List.of("pass=" + pass)));
 		}
 		return false;
 	}

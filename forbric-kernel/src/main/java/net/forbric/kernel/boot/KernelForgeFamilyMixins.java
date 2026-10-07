@@ -97,6 +97,11 @@ public final class KernelForgeFamilyMixins {
 				disabled++;
 				ForbricLog.warn("[Forbric/Mixin] %s's mixin config %s DISABLED — that module's mixins will not "
 						+ "apply", decl.modId(), decl.config());
+				net.forbric.api.CompatibilityFindings.record(new net.forbric.api.CompatibilityFinding(
+						"mixin-config-disabled:" + decl.config(), decl.modId(), "Mixin config", "MixinConfigPolicy",
+						net.forbric.api.CompatibilityFinding.Confidence.CONFIRMED, false,
+						decl.modId() + "'s mixin config " + decl.config() + " disabled — its mixins will not apply",
+						List.of()));
 				continue;
 			}
 			if (!decl.requiredMods().stream().allMatch(net.forbric.api.ModPresence::isLoaded)) {
