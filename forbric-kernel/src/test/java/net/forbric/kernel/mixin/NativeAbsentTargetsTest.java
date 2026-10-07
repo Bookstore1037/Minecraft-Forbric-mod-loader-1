@@ -348,6 +348,29 @@ class NativeAbsentTargetsTest {
 				classes::get, null), "no base view at all");
 	}
 
+	/**
+	 * A base the census was not derived from is the one case it cannot vouch for at all: the miss stays the merge's, but
+	 * the blindness goes in the ledger on the kernel's own row — CONFIRMED, not required, once per boot — so the reports
+	 * and the policy see a run's native-absent judgements turned into merge-loss findings for what they are.
+	 */
+	@Test void aBaseTheCensusCannotVouchForRecordsOneCensusFinding() {
+		NativeAbsentTargets.Table table = NativeAbsentTargets.Table.parse(List.of("base expected"));
+		NativeAbsentTargets.Context context = new NativeAbsentTargets.Context(null, 0, Ecosystem.FABRIC,
+				owner -> "blind-base-for-finding-test", null);
+		assertFalse(NativeAbsentTargets.speaksFor(table, context, BLOCK_ENTITY),
+				"a digest the table does not record is not answered for");
+		assertFalse(NativeAbsentTargets.speaksFor(table, context, BLOCK_ENTITY),
+				"a second ask of the same base is the same answer, not a second report");
+
+		List<CompatibilityFinding> blind = CompatibilityFindings.all().stream()
+				.filter(f -> f.id().equals("native-absent-blind:blind-base-for-finding-test")).toList();
+		assertEquals(1, blind.size(), "the blindness is reported once per boot, whatever the number of asks");
+		CompatibilityFinding finding = blind.get(0);
+		assertEquals("forbric", finding.modId());
+		assertEquals(CompatibilityFinding.Confidence.CONFIRMED, finding.confidence());
+		assertFalse(finding.required(), finding.toString());
+	}
+
 	/** The override names the base to trust instead: what a fixture game's weave test needs. */
 	@Test void theBasePropertyNamesTheBaseToTrustInstead() {
 		owned(Ecosystem.FABRIC);

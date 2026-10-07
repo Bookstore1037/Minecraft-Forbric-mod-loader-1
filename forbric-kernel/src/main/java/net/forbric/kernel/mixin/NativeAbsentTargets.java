@@ -33,6 +33,8 @@ import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import net.forbric.api.CompatibilityFinding;
+import net.forbric.api.CompatibilityFindings;
 import net.forbric.api.DiscoveredMod;
 import net.forbric.api.Ecosystem;
 import net.forbric.api.UnifiedDependency;
@@ -556,7 +558,19 @@ public final class NativeAbsentTargets {
 			running = null;
 		}
 		if (running != null && (running.equals(expected) || table.libraries().contains(running))) return true;
-		if (REPORTED.add(String.valueOf(running))) ForbricLog.warn(mismatch(owner, running, expected));
+		if (REPORTED.add(String.valueOf(running))) {
+			ForbricLog.warn(mismatch(owner, running, expected));
+			// The census is blind for this base, so a target here that the mod's own platform lacks too is NOT judged
+			// absent — it is counted as a merged-base loss, and a downstream finding may be false. That blindness belongs
+			// in the ledger on the kernel's own row, once per boot, so the reports and the policy can see it instead of a
+			// run's native-absent judgements silently turning into merge-loss findings with no line saying why.
+			CompatibilityFindings.record(new CompatibilityFinding("native-absent-blind:" + running, "forbric",
+					"Native-absent census", "NativeAbsentTargets", CompatibilityFinding.Confidence.CONFIRMED, false,
+					"an injector target on " + owner + " may be absent from the mod's own platform too, but the census "
+							+ "cannot vouch for the jar that serves it, so it is counted as a merged-base loss and a "
+							+ "downstream finding may be false",
+					List.of("owner=" + owner, "serving digest=" + running)));
+		}
 		return false;
 	}
 
