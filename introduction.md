@@ -804,12 +804,14 @@ On the merged base the two Forge families' hooks competed for the same call site
 is dead code, so that family's listeners sit on a bus nobody posts to. A MinecraftForge mod needs an instance of
 exactly `net.minecraftforge.…Event`, so re-emission is intrinsic.
 
-- **Inventory** — `net.forbric.api.GameEventBridge` enumerates 96 bridges, each with the event, its install pass
+- **Inventory** — `net.forbric.api.GameEventBridge` enumerates 102 bridges, each with the event, its install pass
   and its **cost** in player terms. Passes: `GAME_BUS` (both sides), `CLIENT_GAME_BUS`, `CLIENT_MOD_BUS`,
   `CLIENT_INIT`, `REGISTRATION`, `CLIENT_HUD`, `ON_DEMAND`.
 - **Verification** — `net.forbric.api.EventBridges.verify(pass)` compares achieved against declared and names what
   is missing with its cost; a bridge that fails to install costs a feature and throws nothing, so this is the only
-  way it becomes visible.
+  way it becomes visible. Each missing bridge is recorded as a CONFIRMED finding; only `SERVER_STARTED` is marked
+  required — its absence fails singleplayer world-join outright — while every other bridge is degraded-but-playable
+  and stays non-required.
 - **Implementation** — `boot.GameEventMultiplexer` installs the bus bridges; the game-side halves are
   `runtime.KernelGame*Events` (tick, server lifecycle, player, level, world, block, entity, damage, tracking,
   client tick/render/input/network/resource/screen-mouse events) and `KernelGameResultBridges` for the two whose
