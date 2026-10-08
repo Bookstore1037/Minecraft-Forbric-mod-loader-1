@@ -107,6 +107,25 @@ def digest(path, algorithm='sha256'):
     return h.hexdigest()
 
 
+MOJANG_MIRRORS = (
+    ('https://launchermeta.mojang.com', 'https://bmclapi2.bangbang93.com'),
+    ('https://piston-meta.mojang.com', 'https://bmclapi2.bangbang93.com'),
+    ('https://piston-data.mojang.com', 'https://bmclapi2.bangbang93.com'),
+    ('https://libraries.minecraft.net', 'https://bmclapi2.bangbang93.com/maven'),
+    ('https://resources.download.minecraft.net', 'https://bmclapi2.bangbang93.com/assets'),
+)
+
+
+def mirror(url):
+    """Mojang's hosts are unreachable from mainland China; BMCLAPI mirrors the same bytes at the same SHA-1."""
+    if os.environ.get('FORBRIC_MOJANG_MIRROR', '1') == '0':
+        return url
+    for host, mirror_host in MOJANG_MIRRORS:
+        if url.startswith(host):
+            return mirror_host + url[len(host):]
+    return url
+
+
 def fetch(url, target, expected=None, algorithm='sha1', size=None, cache=None):
     """Verify cached and downloaded bytes; replace atomically only after validation."""
     def valid(path):
@@ -125,24 +144,37 @@ def fetch(url, target, expected=None, algorithm='sha1', size=None, cache=None):
             raise RuntimeError(f'local cache changed while copying: {cache}')
         temporary.replace(target)
         return
-    request = urllib.request.Request(url, headers={'User-Agent': 'Forbric-dev/1.0'})
     temporary = None
     try:
         with tempfile.NamedTemporaryFile(dir=target.parent, delete=False) as stream:
             temporary = Path(stream.name)
-            for attempt in range(3):
-                try:
-                    with urllib.request.urlopen(request, timeout=30, context=download_context()) as response:
-                        stream.seek(0)
-                        stream.truncate()
-                        shutil.copyfileobj(response, stream)
+            candidates = [url]
+            mirrored = mirror(url)
+            if mirrored != url:
+                candidates.append(mirrored)
+            last_error = None
+            got = False
+            for candidate in candidates:
+                request = urllib.request.Request(candidate, headers={'User-Agent': 'Forbric-dev/1.0'})
+                for attempt in range(3):
+                    try:
+                        with urllib.request.urlopen(request, timeout=30, context=download_context()) as response:
+                            stream.seek(0)
+                            stream.truncate()
+                            shutil.copyfileobj(response, stream)
+                        got = True
+                        break
+                    except (urllib.error.URLError, TimeoutError, ConnectionError) as error:
+                        if isinstance(error, urllib.error.HTTPError) and error.code not in (429, 500, 502, 503, 504):
+                            raise
+                        last_error = error
+                        if attempt == 2:
+                            break
+                        time.sleep(attempt + 1)
+                if got:
                     break
-                except (urllib.error.URLError, TimeoutError, ConnectionError) as error:
-                    if isinstance(error, urllib.error.HTTPError) and error.code not in (429, 500, 502, 503, 504):
-                        raise
-                    if attempt == 2:
-                        raise
-                    time.sleep(attempt + 1)
+            if not got:
+                raise last_error
         if not valid(temporary):
             raise RuntimeError(f'download digest/size mismatch: {url}')
         temporary.replace(target)

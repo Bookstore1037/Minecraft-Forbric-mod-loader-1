@@ -111,20 +111,22 @@ final class Http {
 	 */
 	byte[] getBytes(String url) throws IOException {
 		IOException last = null;
-		for (int attempt = 1; attempt <= ATTEMPTS; attempt++) {
-			try {
-				HttpResponse<byte[]> r = send(request(url).build(),
-						HttpResponse.BodyHandlers.ofByteArray());
-				if (r.statusCode() != 200) throw new IOException("HTTP " + r.statusCode() + " for " + url);
-				return r.body();
-			} catch (IOException e) {
-				last = e;
-				// A server that answered is not going to answer differently; only retry transport failures.
-				if (e.getMessage() != null && e.getMessage().startsWith("HTTP ")) throw e;
-				if (attempt == ATTEMPTS) break;
-				info(PROGRESS + "  " + fileName(url) + "  " + brief(e)
-						+ " - retrying (" + (attempt + 1) + "/" + ATTEMPTS + ")");
-				sleepBackoff(attempt);
+		for (String candidate : candidates(url)) {
+			for (int attempt = 1; attempt <= ATTEMPTS; attempt++) {
+				try {
+					HttpResponse<byte[]> r = send(request(candidate).build(),
+							HttpResponse.BodyHandlers.ofByteArray());
+					if (r.statusCode() != 200) throw new IOException("HTTP " + r.statusCode() + " for " + candidate);
+					return r.body();
+				} catch (IOException e) {
+					last = e;
+					// A server that answered is not going to answer differently; only retry transport failures.
+					if (e.getMessage() != null && e.getMessage().startsWith("HTTP ")) throw e;
+					if (attempt == ATTEMPTS) break;
+					info(PROGRESS + "  " + fileName(candidate) + "  " + brief(e)
+							+ " - retrying (" + (attempt + 1) + "/" + ATTEMPTS + ")");
+					sleepBackoff(attempt);
+				}
 			}
 		}
 		throw last;
@@ -200,21 +202,42 @@ final class Http {
 	 */
 	/** Every request, with the header-wait bounded. See {@link #HEADER_SECONDS}. */
 	private static HttpRequest.Builder request(String url) {
-		return HttpRequest.newBuilder(URI.create(url)).GET().timeout(Duration.ofSeconds(HEADER_SECONDS));
+		// BMCLAPI (the China mirror) rejects the default Java user agent with 403; send one both hosts accept.
+		return HttpRequest.newBuilder(URI.create(url)).header("User-Agent", "Forbric-installer/1.0")
+				.GET().timeout(Duration.ofSeconds(HEADER_SECONDS));
+	}
+
+	/** Mojang's hosts are unreachable from mainland China; BMCLAPI mirrors the same bytes at the same SHA-1. */
+	private static String mirror(String url) {
+		if (!Boolean.parseBoolean(System.getProperty("forbric.mojangMirror", "true"))) return url;
+		return url
+				.replace("https://launchermeta.mojang.com", "https://bmclapi2.bangbang93.com")
+				.replace("https://piston-meta.mojang.com", "https://bmclapi2.bangbang93.com")
+				.replace("https://piston-data.mojang.com", "https://bmclapi2.bangbang93.com")
+				.replace("https://libraries.minecraft.net", "https://bmclapi2.bangbang93.com/maven")
+				.replace("https://resources.download.minecraft.net", "https://bmclapi2.bangbang93.com/assets");
+	}
+
+	/** The primary URL, then its BMCLAPI mirror when it is a Mojang host — tried in that order. */
+	private static String[] candidates(String url) {
+		String mirrored = mirror(url);
+		return mirrored.equals(url) ? new String[] { url } : new String[] { url, mirrored };
 	}
 
 	private int stream(String url, Path dest) throws IOException {
 		IOException last = null;
-		for (int attempt = 1; attempt <= ATTEMPTS; attempt++) {
-			try {
-				return streamOnce(url, dest);
-			} catch (IOException e) {
-				last = e;
-				deleteQuietly(dest);
-				if (attempt == ATTEMPTS) break;
-				info(PROGRESS + "  " + fileName(url) + "  " + brief(e)
-						+ " - retrying (" + (attempt + 1) + "/" + ATTEMPTS + ")");
-				sleepBackoff(attempt);
+		for (String candidate : candidates(url)) {
+			for (int attempt = 1; attempt <= ATTEMPTS; attempt++) {
+				try {
+					return streamOnce(candidate, dest);
+				} catch (IOException e) {
+					last = e;
+					deleteQuietly(dest);
+					if (attempt == ATTEMPTS) break;
+					info(PROGRESS + "  " + fileName(candidate) + "  " + brief(e)
+							+ " - retrying (" + (attempt + 1) + "/" + ATTEMPTS + ")");
+					sleepBackoff(attempt);
+				}
 			}
 		}
 		throw last;
