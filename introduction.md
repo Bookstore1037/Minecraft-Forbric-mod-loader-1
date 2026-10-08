@@ -807,6 +807,23 @@ exactly `net.minecraftforge.…Event`, so re-emission is intrinsic.
 - **Inventory** — `net.forbric.api.GameEventBridge` enumerates 102 bridges, each with the event, its install pass
   and its **cost** in player terms. Passes: `GAME_BUS` (both sides), `CLIENT_GAME_BUS`, `CLIENT_MOD_BUS`,
   `CLIENT_INIT`, `REGISTRATION`, `CLIENT_HUD`, `ON_DEMAND`.
+  The seven passes and how each is accounted for:
+
+  | Pass | Accounted by |
+  |---|---|
+  | GAME_BUS | EventBridges.verify at GameEventMultiplexer.java:246 |
+  | CLIENT_GAME_BUS | EventBridges.verify at GameEventMultiplexer.java:319 |
+  | CLIENT_MOD_BUS | EventBridges.verify at GameEventMultiplexer.java:386 |
+  | CLIENT_INIT | EventBridges.verify at KernelLifecycle.java:2857 |
+  | REGISTRATION | EventBridges.verify at KernelLifecycle.java:170 |
+  | CLIENT_HUD | EventBridges.verify at KernelForgeOverlayLayers.java:95/100/135/149 (in src/runtime) |
+  | ON_DEMAND | Not verified at boot, by design — see below |
+
+  ON_DEMAND is deliberately not covered by verify. Its call site only
+  fires when a player hovers an item, so "not yet fired" and "missing"
+  are indistinguishable at startup. Its presence is proven by the
+  transformer census (the postNeoForgesItemTooltipEvent claim) together
+  with the DeadEventAudit rows, not by a boot-time verify pass.
 - **Verification** — `net.forbric.api.EventBridges.verify(pass)` compares achieved against declared and names what
   is missing with its cost; a bridge that fails to install costs a feature and throws nothing, so this is the only
   way it becomes visible. Each missing bridge is recorded as a CONFIRMED finding; only `SERVER_STARTED` is marked
